@@ -1,0 +1,3 @@
+Idea: Use the commits/day matrix on the profile page to display messages.
+
+Matrix: ~7x53
