@@ -2,7 +2,6 @@ package it.oberwalder;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
 import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -16,24 +15,25 @@ import static java.time.DayOfWeek.SATURDAY;
 public class MessageToBanner {
 
     public static void execute() {
-       Raster raster = RasterFromGif();
-       List numberOfCommitsInOrder = listFromRaster(raster);
+        BufferedImage img = imageFromBmp();
+       List numberOfCommitsInOrder = listFromRaster(img);
        LocalDate startDate = getGithubMatrixLastPoint(LocalDate.now());
        commitsFromDateAndList(startDate, numberOfCommitsInOrder);
     }
 
-    private static List listFromRaster(Raster raster) {
-        List<int[]> listOfPixels = new ArrayList<>();
+    private static List listFromRaster(BufferedImage img) {
+        List<Integer> listOfPixels = new ArrayList<>();
         int [] dataBuffer = new int[10];
-        for (int i = 0; i < raster.getWidth(); i++) {
-            for (int j = 0; j < raster.getHeight(); j++) {
-                int[] pixelValue = raster.getPixel(i, j, dataBuffer);
-                listOfPixels.add(pixelValue);
+        for (int i = 0; i < img.getWidth(); i++) {
+            for (int j = 0; j < img.getHeight(); j++) {
+                int pixelRGB = img.getRGB(i, j);
+                int red = (pixelRGB >> 16) & 255;
+                listOfPixels.add(red);
             }
         }
         Collections.reverse(listOfPixels);
-        List<Integer> listOfRedValues = listOfPixels.stream().map(x -> x[0]).collect(Collectors.toList());
-        return listOfRedValues;
+        List<Integer> listOfRedValuesHalfAmount = listOfPixels.stream().map(x -> (255-x)/2).collect(Collectors.toList());
+        return listOfRedValuesHalfAmount;
     }
 
     private static void commitsFromDateAndList(LocalDate startDate, List<Integer> list) {
@@ -64,14 +64,13 @@ public class MessageToBanner {
             .with(SATURDAY);
     }
 
-    private static Raster RasterFromGif() {
+    private static BufferedImage imageFromBmp() {
         BufferedImage img = null;
         try {
-            img = ImageIO.read(new File("/home/work/tools/git/lbanner/src/main/resources/message.bmp"));
+            img = ImageIO.read(new File("/home/work/tools/git/lbanner/src/main/resources/topright.bmp"));
         } catch(Exception ignored) {
             System.out.println( ignored.getMessage());
         }
-
-       return img.getData();
+       return img;
     }
 }
